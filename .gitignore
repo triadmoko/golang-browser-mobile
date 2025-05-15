@@ -48,3 +48,19 @@ yarn-error.log
 *.swp
 *.swo
 .DS_Store 
+
+# Build
+/build/
+/dist/
+/node_modules/
+/mobile-shell/
+
+# Expo
+/frontend/node_modules/
+/frontend/ios/
+/frontend/android/
+/frontend/ios/
+/frontend/android/
+/frontend/.expo/
+
+

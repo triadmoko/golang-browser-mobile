@@ -37,42 +37,33 @@ func (e *Expo) Setup() error {
 	if err := exec.Command("which", "npx").Run(); err != nil {
 		fmt.Println("Installing NPX (part of Node.js)...")
 		if err := utils.RunCmd("apt-get", "update"); err != nil {
-			return fmt.Errorf("failed to update package lists: %w", err)
-		}
-		if err := utils.RunCmd("apt-get", "install", "-y", "nodejs", "npm"); err != nil {
-			return fmt.Errorf("failed to install Node.js and NPM: %w", err)
+			// If system packages can't be updated (permissions), inform the user
+			fmt.Println("Warning: Could not update package lists. You may need sudo privileges.")
+			fmt.Println("Please ensure Node.js and NPM are installed on your system.")
+		} else if err := utils.RunCmd("apt-get", "install", "-y", "nodejs", "npm"); err != nil {
+			fmt.Println("Warning: Could not install Node.js and NPM. You may need sudo privileges.")
+			fmt.Println("Please ensure Node.js and NPM are installed on your system.")
 		}
 	}
 
-	// Create a symlink for expo in node_modules/.bin if available
+	// Skip symlink creation that requires root - just note the location
 	expoPath := filepath.Join(e.FrontendDir, "node_modules", ".bin", "expo")
 	if _, err := os.Stat(expoPath); err == nil {
-		// Create symlink to make expo available in PATH
-		binDir := "/usr/local/bin"
-		if err := os.MkdirAll(binDir, 0755); err != nil {
-			fmt.Printf("Warning: Failed to create bin directory: %v\n", err)
-		} else {
-			symlinkPath := filepath.Join(binDir, "expo")
-			// Remove existing symlink if it exists
-			_ = os.Remove(symlinkPath)
-			if err := os.Symlink(expoPath, symlinkPath); err != nil {
-				fmt.Printf("Warning: Failed to create symlink to expo: %v\n", err)
-			} else {
-				fmt.Println("Created symlink to expo in " + binDir)
-			}
-		}
+		fmt.Println("Local expo found at " + expoPath)
+		fmt.Println("You can add this to your PATH temporarily with:")
+		fmt.Println("export PATH=\"" + expoPath + ":$PATH\"")
 	}
 
-	// Check if global expo-cli is installed or use local one
-	if err := exec.Command("npx", "expo", "--version").Run(); err != nil {
+	// Check if npx can run expo - use this approach rather than global installation
+	if err := exec.Command("npx", "--no-install", "expo", "--version").Run(); err != nil {
 		fmt.Println("Installing Expo CLI in project...")
 		if err := utils.RunCmdWithDir(e.FrontendDir, "npm", "install", "--save-dev", "expo-cli"); err != nil {
 			return fmt.Errorf("failed to install expo-cli in project: %w", err)
 		}
 	}
 
-	// Install EAS CLI for building
-	if err := exec.Command("npx", "eas", "--version").Run(); err != nil {
+	// Install EAS CLI locally in the project
+	if err := exec.Command("npx", "--no-install", "eas", "--version").Run(); err != nil {
 		fmt.Println("Installing EAS CLI in project...")
 		if err := utils.RunCmdWithDir(e.FrontendDir, "npm", "install", "--save-dev", "eas-cli"); err != nil {
 			return fmt.Errorf("failed to install eas-cli in project: %w", err)
@@ -112,48 +103,25 @@ func (e *Expo) CreateEasConfig() error {
 func (e *Expo) StartDevServer(platform string) error {
 	fmt.Println("Starting Expo development server for", platform, "...")
 
-	// First check if expo is installed or use npx
-	var cmd string = "expo"
-	expoPath := filepath.Join(e.FrontendDir, "node_modules", ".bin", "expo")
-	if _, err := os.Stat(expoPath); err != nil {
-		// If we don't have direct access to expo in node_modules, use npx
-		cmd = "npx"
-	}
+	// First, try using npx which is the most reliable
+	var npxArgs []string
 
-	var args []string
 	switch platform {
 	case "web":
-		if cmd == "npx" {
-			args = []string{"expo", "start", "--web"}
-		} else {
-			args = []string{"start", "--web"}
-		}
+		npxArgs = []string{"expo", "start", "--web"}
 	case "android":
-		if cmd == "npx" {
-			args = []string{"expo", "start", "--android"}
-		} else {
-			args = []string{"start", "--android"}
-		}
+		npxArgs = []string{"expo", "start", "--android"}
 	case "ios":
-		if cmd == "npx" {
-			args = []string{"expo", "start", "--ios"}
-		} else {
-			args = []string{"start", "--ios"}
-		}
+		npxArgs = []string{"expo", "start", "--ios"}
 	default:
-		if cmd == "npx" {
-			args = []string{"expo", "start"}
-		} else {
-			args = []string{"start"}
-		}
+		npxArgs = []string{"expo", "start"}
 	}
 
-	// Try running with the selected command
-	err := utils.RunCmdWithDir(e.FrontendDir, cmd, args...)
+	err := utils.RunCmdWithDir(e.FrontendDir, "npx", npxArgs...)
 	if err != nil {
-		// If direct command failed, try with npm scripts as fallback
-		fmt.Println("Falling back to npm scripts...")
+		fmt.Println("Direct execution with npx failed, trying npm scripts as fallback...")
 
+		// If npx approach fails, try with npm scripts as fallback
 		var npmArgs []string
 		switch platform {
 		case "web":
