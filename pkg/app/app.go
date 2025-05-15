@@ -7,7 +7,6 @@ import (
 
 	"github.com/codemi-be/golang-browser-mobile/pkg/builder"
 	"github.com/codemi-be/golang-browser-mobile/pkg/config"
-	"github.com/codemi-be/golang-browser-mobile/pkg/expo"
 	"github.com/codemi-be/golang-browser-mobile/pkg/server"
 )
 
@@ -17,7 +16,6 @@ type App struct {
 	Frontend *builder.Frontend
 	Android  *builder.Android
 	IOS      *builder.IOS
-	Expo     *expo.Expo
 	Server   *server.PreviewServer
 }
 
@@ -28,19 +26,12 @@ func New(cfg *config.Config) *App {
 		Frontend: builder.NewFrontend(cfg.RootDir),
 		Android:  builder.NewAndroid(cfg.RootDir),
 		IOS:      builder.NewIOS(cfg.RootDir),
-		Expo:     expo.NewExpo(cfg.RootDir),
 		Server:   server.NewPreviewServer(cfg.RootDir, cfg.PreviewPort),
 	}
 }
 
 // Run executes the application based on the configuration
 func (a *App) Run() error {
-	// Initialize Expo if needed
-	if a.Config.UseExpo {
-		if err := a.setupExpo(); err != nil {
-			return fmt.Errorf("expo setup failed: %w", err)
-		}
-	}
 
 	// Run in development mode
 	if a.Config.DevMode {
@@ -51,20 +42,9 @@ func (a *App) Run() error {
 	return a.runBuildMode()
 }
 
-// setupExpo initializes the Expo environment
-func (a *App) setupExpo() error {
-	return a.Expo.Setup()
-}
-
 // runDevMode runs the application in development mode
 func (a *App) runDevMode() error {
 	fmt.Println("Running in development mode...")
-
-	if a.Config.UseExpo {
-		// Development with Expo
-		platform := a.Config.GetPlatform()
-		return a.Expo.StartDevServer(platform)
-	}
 
 	// Development with WebView
 	var wg sync.WaitGroup
@@ -141,27 +121,7 @@ func (a *App) launchIOSPreview() error {
 
 // runBuildMode builds the application for production
 func (a *App) runBuildMode() error {
-	if a.Config.UseExpo {
-		return a.buildWithExpo()
-	}
-
 	return a.buildWithWebView()
-}
-
-// buildWithExpo builds the app using Expo
-func (a *App) buildWithExpo() error {
-	platform := a.Config.GetPlatform()
-
-	if platform == "android" || platform == "ios" {
-		if err := a.Expo.BuildApp(platform); err != nil {
-			return fmt.Errorf("expo %s build failed: %w", platform, err)
-		}
-	} else {
-		return fmt.Errorf("please specify a platform (-android or -ios) for Expo build")
-	}
-
-	fmt.Println("Expo build completed successfully!")
-	return nil
 }
 
 // buildWithWebView builds the app using WebView approach

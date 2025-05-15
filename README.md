@@ -16,7 +16,6 @@ Kerangka kerja untuk membuat aplikasi mobile menggunakan Golang dengan UI dari R
 - Node.js dan npm
 - Android SDK (untuk build Android)
 - Xcode (untuk build iOS, hanya di macOS)
-- Expo CLI (opsional, untuk pengembangan dengan Expo)
 
 ## Struktur Proyek
 
@@ -44,13 +43,6 @@ golang-browser-mobile/
 # Jalankan dalam mode pengembangan WebView
 go run main.go -dev
 
-# Jalankan dengan Expo
-go run main.go -dev -expo
-
-# Jalankan dengan Expo untuk platform tertentu
-go run main.go -dev -expo -android
-go run main.go -dev -expo -ios
-
 # Jalankan dalam mode pengembangan dengan preview ke emulator/perangkat Android
 go run main.go -dev -preview -android [-device=DEVICE_ID]
 
@@ -66,10 +58,6 @@ go run main.go -android
 
 # Build Frontend + iOS (WebView)
 go run main.go -ios
-
-# Build dengan Expo
-go run main.go -expo -android  # Build Android dengan Expo
-go run main.go -expo -ios      # Build iOS dengan Expo
 
 # Build dan langsung jalankan di perangkat
 go run main.go -android -preview [-device=DEVICE_ID]
@@ -104,26 +92,6 @@ if (
 
   // iOS akan memanggil fungsi setPlatformInfo yang Anda definisikan di JavaScript
 }
-```
-
-## Expo Integration
-
-Framework ini mendukung pengembangan dengan Expo sebagai alternatif dari pendekatan WebView. Keuntungan menggunakan Expo:
-
-1. **Live Reload** - Perubahan kode langsung terlihat di perangkat/emulator
-2. **Expo Go** - Testing di perangkat tanpa proses build lengkap
-3. **Over-the-Air Updates** - Update aplikasi tanpa submit ke app store
-4. **Native Components** - Akses ke komponen native melalui Expo SDK
-5. **Build Service** - Build aplikasi di cloud tanpa memerlukan setup lokal
-
-Untuk menggunakan Expo, cukup tambahkan flag `-expo` pada perintah:
-
-```bash
-# Pengembangan dengan Expo
-go run main.go -dev -expo
-
-# Build produksi dengan Expo
-go run main.go -expo -android
 ```
 
 ## Kustomisasi Framework Web
