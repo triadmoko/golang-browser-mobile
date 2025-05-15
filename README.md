@@ -8,7 +8,10 @@ Kerangka kerja untuk membuat aplikasi mobile menggunakan Golang dengan UI dari R
 - 🔄 **Hot Reload** - Pengembangan dengan hot reload untuk perubahan cepat
 - 👁️ **Preview** - Preview ke simulator, emulator, atau perangkat nyata
 - 📱 **Cross-Platform** - Build untuk Android dan iOS dari codebase yang sama
-- 🚀 **Expo Integration** - Dukungan untuk pengembangan dengan Expo
+
+## Preview
+
+![Preview](./preview.png)
 
 ## Persyaratan
 
