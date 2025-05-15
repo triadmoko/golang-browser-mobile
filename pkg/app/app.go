@@ -57,10 +57,13 @@ func (a *App) runDevMode() error {
 			log.Printf("Failed to start dev server: %v", err)
 		}
 	}()
+
 	// If previewing on device/emulator
 	if a.Config.Preview {
 		if err := a.setupDevicePreview(); err != nil {
 			log.Printf("Warning: Preview setup issue: %v", err)
+			// Even if preview setup fails, we'll continue running the dev server
+			fmt.Println("Development server is still running at http://localhost:3000")
 		}
 	} else {
 		fmt.Println("Starting preview server...")
@@ -75,10 +78,13 @@ func (a *App) runDevMode() error {
 
 // setupDevicePreview sets up preview on a device
 func (a *App) setupDevicePreview() error {
+	fmt.Println("Setting up device preview...")
+
 	// Set up port forwarding for Android
 	if a.Config.DeviceID != "" && a.Config.BuildAndroid {
 		if err := a.Android.SetupPortForwarding(a.Config.DeviceID, a.Config.DevPort); err != nil {
-			return fmt.Errorf("port forwarding failed: %w", err)
+			fmt.Printf("Warning: Port forwarding failed: %v\n", err)
+			// Continue anyway, as it might still work
 		}
 	}
 
@@ -86,18 +92,26 @@ func (a *App) setupDevicePreview() error {
 	if a.Config.BuildAndroid {
 		// Build Android app before installation
 		if err := a.Android.Build(); err != nil {
-			return fmt.Errorf("android build failed: %w", err)
+			fmt.Printf("Warning: Android build failed: %v\n", err)
+			fmt.Println("You can access the development server directly at http://localhost:3000")
+			return nil // Return nil to continue with the app
 		}
 		if err := a.launchAndroidPreview(); err != nil {
-			return err
+			fmt.Printf("Warning: Android preview launch failed: %v\n", err)
+			fmt.Println("You can access the development server directly at http://localhost:3000")
+			return nil // Return nil to continue with the app
 		}
 	} else if a.Config.BuildIOS {
 		// Build iOS app before installation
 		if err := a.IOS.Build(); err != nil {
-			return fmt.Errorf("iOS build failed: %w", err)
+			fmt.Printf("Warning: iOS build failed: %v\n", err)
+			fmt.Println("You can access the development server directly at http://localhost:3000")
+			return nil // Return nil to continue with the app
 		}
 		if err := a.launchIOSPreview(); err != nil {
-			return err
+			fmt.Printf("Warning: iOS preview launch failed: %v\n", err)
+			fmt.Println("You can access the development server directly at http://localhost:3000")
+			return nil // Return nil to continue with the app
 		}
 	}
 

@@ -59,7 +59,7 @@ class MainActivity : AppCompatActivity() {
         
         if (isDevelopment) {
             // For development, load from development server
-            webView.loadUrl("http://10.0.2.2:3001") // Android emulator localhost equivalent
+            webView.loadUrl("http://localhost:3000") // Android emulator localhost equivalent
         } else {
             // For production, load from assets (the bundled web app)
             webView.loadUrl("file:///android_asset/index.html")
