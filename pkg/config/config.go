@@ -34,7 +34,7 @@ func New() *Config {
 	flag.BoolVar(&config.BuildAndroid, "android", false, "Build Android APK")
 	flag.BoolVar(&config.BuildIOS, "ios", false, "Build iOS app")
 	flag.BoolVar(&config.Preview, "preview", false, "Preview on simulator/device")
-	flag.StringVar(&config.DeviceID, "device", "", "Specify device ID for preview (optional)")
+	flag.StringVar(&config.DeviceID, "device", "emulator-5554", "Specify device ID for preview (optional)")
 	flag.StringVar(&config.PreviewPort, "preview-port", "8080", "Port for preview server")
 	flag.StringVar(&config.DevPort, "dev-port", "3001", "Port for development server")
 

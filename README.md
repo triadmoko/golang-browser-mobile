@@ -16,6 +16,14 @@ Kerangka kerja untuk membuat aplikasi mobile menggunakan Golang dengan UI dari R
 - Node.js dan npm
 - Android SDK (untuk build Android)
 - Xcode (untuk build iOS, hanya di macOS)
+- ADB (Android Debug Bridge)
+- Simulator Android (Android Studio)
+- Gradle (untuk build Android)
+- CocoaPods (untuk build iOS)
+- Simulator iOS (Xcode)
+- Xcode Command Line Tools
+- Android Studio
+- Xcode
 
 ## Struktur Proyek
 

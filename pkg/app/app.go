@@ -48,19 +48,22 @@ func (a *App) runDevMode() error {
 
 	// Development with WebView
 	var wg sync.WaitGroup
-	wg.Add(1)
+	wg.Add(2) // Increased to 2 to account for the dev server goroutine
 
-	// Start frontend dev server
-	if err := a.Frontend.StartDevServer(); err != nil {
-		return fmt.Errorf("failed to start dev server: %w", err)
-	}
-
+	// Start frontend dev server asynchronously
+	go func() {
+		defer wg.Done()
+		if err := a.Frontend.StartDevServer(); err != nil {
+			log.Printf("Failed to start dev server: %v", err)
+		}
+	}()
 	// If previewing on device/emulator
 	if a.Config.Preview {
 		if err := a.setupDevicePreview(); err != nil {
 			log.Printf("Warning: Preview setup issue: %v", err)
 		}
 	} else {
+		fmt.Println("Starting preview server...")
 		// Just serve the assets locally for quick preview
 		a.Server.StartBackground()
 	}
@@ -79,12 +82,20 @@ func (a *App) setupDevicePreview() error {
 		}
 	}
 
-	// Launch on Android or iOS
+	// Build the apps first when in dev mode
 	if a.Config.BuildAndroid {
+		// Build Android app before installation
+		if err := a.Android.Build(); err != nil {
+			return fmt.Errorf("android build failed: %w", err)
+		}
 		if err := a.launchAndroidPreview(); err != nil {
 			return err
 		}
 	} else if a.Config.BuildIOS {
+		// Build iOS app before installation
+		if err := a.IOS.Build(); err != nil {
+			return fmt.Errorf("iOS build failed: %w", err)
+		}
 		if err := a.launchIOSPreview(); err != nil {
 			return err
 		}

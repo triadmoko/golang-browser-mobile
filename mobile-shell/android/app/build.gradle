@@ -1,15 +1,16 @@
 plugins {
     id 'com.android.application'
-    id 'kotlin-android'
+    id 'org.jetbrains.kotlin.android'
 }
 
 android {
-    compileSdkVersion 33
+    namespace 'com.example.golangmobile'
+    compileSdk 33
     
     defaultConfig {
         applicationId "com.example.golangmobile"
-        minSdkVersion 21
-        targetSdkVersion 33
+        minSdk 21
+        targetSdk 33
         versionCode 1
         versionName "1.0"
     }

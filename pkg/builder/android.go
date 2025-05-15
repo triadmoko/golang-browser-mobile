@@ -49,7 +49,49 @@ func (a *Android) Build() error {
 func (a *Android) InstallApp(deviceID string) error {
 	fmt.Println("Installing Android app on device/emulator...")
 
-	apkPath := filepath.Join(a.ShellDir, "app", "build", "outputs", "apk", "debug", "app-debug.apk")
+	// Try both potential APK locations (old and new AGP paths)
+	apkPaths := []string{
+		filepath.Join(a.ShellDir, "app", "build", "outputs", "apk", "debug", "app-debug.apk"),
+		filepath.Join(a.ShellDir, "app", "build", "intermediates", "apk", "debug", "app-debug.apk"),
+	}
+
+	var apkPath string
+	var found bool
+
+	for _, path := range apkPaths {
+		if _, err := os.Stat(path); err == nil {
+			apkPath = path
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		// Let's look for any APK file
+		searchPath := filepath.Join(a.ShellDir, "app", "build")
+		fmt.Println("Searching for APK in:", searchPath)
+
+		err := filepath.Walk(searchPath, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+			if !info.IsDir() && filepath.Ext(path) == ".apk" {
+				apkPath = path
+				found = true
+				fmt.Println("Found APK at:", path)
+				return filepath.SkipAll
+			}
+			return nil
+		})
+
+		if err != nil {
+			return fmt.Errorf("error searching for APK: %w", err)
+		}
+	}
+
+	if !found {
+		return fmt.Errorf("no APK file found in build directory")
+	}
 
 	args := []string{"install", "-r"}
 	if deviceID != "" {
